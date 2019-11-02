@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Diwali Sequential Msg Broadcast</title>
+</head>
+
+<script src="jquery.js"></script> 
+<script src = "/socket.io/socket.io.js"></script>
+
+<script>
+    var socket = io();
+
+    // On message received 
+    socket.on('diwaliMessage', function(data){
+        $('#message').text(data['msg']);
+        console.log(data['msg']);
+        
+    });
+    
+    // Server connection dropped 
+    socket.on('disconnect', function(){
+        console.log('disconnected');
+        resetConfig();
+    });
+    
+    function resetConfig(){
+        sequenceID = -1;
+        
+        // Show the box 
+        $('#inputSequenceID').show();
+        $('#btnSend').show();
+    }
+    
+</script> 
+
+
+<body>
+    
+    <input id="inputSequenceID" type="text" placeholder="Your sequence order">
+    <button id="btnSend">Send</button>
+    <h1 id= "message" class ="word"></h1>
+    <canvas id="canvas">Canvas is not supported in your browser.</canvas>
+    
+</body>
+
+<script>
+    var inputBox, sendBtn, sequenceID = -1;
+    
+    function isInt(value) {
+        if (isNaN(value)) {
+            return false;
+        }
+        var x = parseFloat(value);
+        return (x | 0) === x;
+    }
+    
+    function display(text){
+        alert(text);
+        console.log(text);
+    }
+    
+    $(function() { 
+        inputBox = document.getElementById("inputSequenceID");
+        sendBtn = document.getElementById("btnSend");
+        
+        // Register the sequence number with the server, 
+        // so that server knows in which order the message has to be sent
+        sendBtn.addEventListener("click",function() {
+            var inputValue = inputBox.value;
+            
+            if(isInt(inputValue)){
+                
+                // Hide the box 
+                $('#inputSequenceID').hide();
+                $('#btnSend').hide();
+                
+                // Copy 
+                sequenceID = inputValue;
+                
+                var objValue = {
+                    socketID: String(socket.id),
+                    sequenceId: sequenceID
+                };
+                
+                // Update the server 
+                socket.emit('register', objValue);
+            }else{
+                display('Please enter valid number')
+                return;
+            }
+        });       
+    });
+</script>
+
+<!-- 
+    Fireworks 
+    https://codepen.io/whqet/pen/Auzch
+-->
+<link rel="stylesheet" type="text/css" href="fireworks.css">
+<script src="fireworks.js"></script> 
+
+<!-- Text Style and Color -->
+<link rel="stylesheet" type="text/css" href="texteffect.css">
+
+</html>
